@@ -210,12 +210,11 @@ function getRectangleString(width, height) {
   const betweenStrings = [];
 
   for(let i =0; i<linesHeight; i++){
-    betweenStrings.push(`|${' '.repeat(linesWidth)}|\n`);
+    betweenStrings.push(`│${' '.repeat(linesWidth)}│\n`);
   }
 
   const lastString = `└${'─'.repeat(linesWidth)}┘\n`;
-  const t = `${firstString}${betweenStrings.join('')}${lastString}`
-  return t;
+  return `${firstString}${betweenStrings.join('')}${lastString}`;
 }
 
 
