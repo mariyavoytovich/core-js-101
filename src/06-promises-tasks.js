@@ -28,8 +28,13 @@
  *      .catch((error) => console.log(error.message)) // 'Error: Wrong parameter is passed!
  *                                                    //  Ask her again.';
  */
-function willYouMarryMe(/* isPositiveAnswer */) {
-  throw new Error('Not implemented');
+function willYouMarryMe(isPositiveAnswer) {
+  return new Promise((resolve, reject) => {
+    if(typeof isPositiveAnswer !== 'boolean')
+      reject(new Error('Wrong parameter is passed! Ask her again.'));
+
+    resolve(isPositiveAnswer ? 'Hooray!!! She said "Yes"!' : 'Oh no, she said "No".');
+  });
 }
 
 
@@ -48,8 +53,13 @@ function willYouMarryMe(/* isPositiveAnswer */) {
  *    })
  *
  */
-function processAllPromises(/* array */) {
-  throw new Error('Not implemented');
+function processAllPromises(array) {
+  return new Promise((resolve, reject) => {
+    Promise.all(array).then(
+      result => resolve(result),
+      error => reject(new Error(error.message))
+    )
+  });
 }
 
 /**
@@ -71,8 +81,13 @@ function processAllPromises(/* array */) {
  *    })
  *
  */
-function getFastestPromise(/* array */) {
-  throw new Error('Not implemented');
+function getFastestPromise(array) {
+  return new Promise((resolve, reject) => {
+    Promise.race(array).then(
+      result => resolve(result),
+      error => reject(new Error(error.message))
+    )
+  });
 }
 
 /**
@@ -92,8 +107,27 @@ function getFastestPromise(/* array */) {
  *    });
  *
  */
-function chainPromises(/* array, action */) {
-  throw new Error('Not implemented');
+async function chainPromises(array, action ) {
+  const results = [];
+
+  return new Promise((resolve, reject)=>{
+    const checkAll = () =>{
+      if(results.length === array.length){
+        const actionResult = results.reduce((prev, curr)=> curr instanceof Error ? prev : action(prev, curr))
+        resolve(actionResult);
+      }
+    }
+    const pushResult = (value) =>{
+      results.push(value);
+      checkAll();
+    }
+
+    for(const promise of array){
+      promise
+        .then(result => pushResult(result))
+        .catch(error => pushResult(new Error(error.message)));
+    }
+  });
 }
 
 module.exports = {
