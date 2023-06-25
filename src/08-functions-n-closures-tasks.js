@@ -8,7 +8,6 @@
  *                                                                                             *
  ********************************************************************************************* */
 
-
 /**
  * Returns the functions composition of two specified functions f(x) and g(x).
  * The result of compose is to be a function of one argument, (lets call the argument x),
@@ -24,11 +23,10 @@
  *
  */
 function getComposition(f, g) {
-  return function(x){
+  return function (x) {
     return f(g(x));
-  }
+  };
 }
-
 
 /**
  * Returns the math power function with the specified exponent
@@ -47,11 +45,10 @@ function getComposition(f, g) {
  *
  */
 function getPowerFunction(exponent) {
-  return function (x){
-    return Math.pow(x, exponent);
-  }
+  return function (x) {
+    return x ** exponent;
+  };
 }
-
 
 /**
  * Returns the polynom function of one argument based on specified coefficients.
@@ -68,25 +65,20 @@ function getPowerFunction(exponent) {
  */
 function getPolynom(...args) {
   const numbers = args;
-  return function (x){
-    if(numbers.length === 0)
-      return null;
+  return function (x) {
+    if (numbers.length === 0) return null;
 
-    if(numbers.length === 1)
-      return numbers[0];
+    if (numbers.length === 1) return numbers[0];
 
-    if(numbers.length === 2){
+    if (numbers.length === 2) {
       const [b, c] = numbers;
       return b * x + c;
     }
 
-    if(numbers.length === 3){
-      const [a, b, c] = numbers;
-      return  a * Math.pow(x, a) + b * x + c;
-    }
-  }
+    const [a, b, c] = numbers;
+    return a * x ** a + b * x + c;
+  };
 }
-
 
 /**
  * Memoizes passed function and returns function
@@ -104,11 +96,10 @@ function getPolynom(...args) {
  */
 function memoize(func) {
   const cache = func();
-  return function(){
+  return function () {
     return cache;
-  }
+  };
 }
-
 
 /**
  * Returns the function trying to call the passed function and if it throws,
@@ -125,25 +116,21 @@ function memoize(func) {
  * }, 2);
  * retryer() => 2
  */
-function retry(func, attempts) {
 
-  const tryFunc = (func, attempts) => {
-    try {
-      return func();
-    }
-    catch{
-      if (attempts > 1)
-        return tryFunc(func, attempts - 1);
-    }
+function tryFunc(triedFunc, funcAttempts) {
+  try {
+    return triedFunc();
+  } catch (e) {
+    if (funcAttempts > 1) return tryFunc(triedFunc, funcAttempts - 1);
   }
-
-  return function()
-  {
-    return tryFunc(func, attempts);
-  }
-
+  return undefined;
 }
 
+function retry(func, attempts) {
+  return function () {
+    return tryFunc(func, attempts);
+  };
+}
 
 /**
  * Returns the logging wrapper for the specified method,
@@ -169,36 +156,37 @@ function retry(func, attempts) {
  *
  */
 function logger(func, logFunc) {
-
   const getArgsAsString = (args) => {
     const argsStr = [];
-    for(let arg of args){
-      if(typeof arg === 'string'){
+    let index = 0;
+
+    while (index < args.length) {
+      const arg = args[index];
+      if (typeof arg === 'string') {
         argsStr.push(`"${arg}"`);
-        continue;
-      }
-      if(Array.isArray(arg)){
+      } else if (Array.isArray(arg)) {
         argsStr.push(`[${getArgsAsString(arg)}]`);
-        continue;
+      } else {
+        argsStr.push(arg);
       }
-      argsStr.push(arg);
+
+      index += 1;
     }
     return argsStr.join(',');
-  }
+  };
 
-  const log = (args, str) =>{
+  const log = (args, str) => {
     logFunc(`${func.name}(${args}) ${str}`);
-  }
+  };
 
-  return function(...args){
+  return function (...args) {
     const argsStr = getArgsAsString(args);
     log(argsStr, 'starts');
     const result = func(...args);
     log(argsStr, 'ends');
     return result;
-  }
+  };
 }
-
 
 /**
  * Return the function with partial applied arguments
@@ -214,11 +202,10 @@ function logger(func, logFunc) {
  *   partialUsingArguments(fn, 'a','b','c','d')() => 'abcd'
  */
 function partialUsingArguments(fn, ...args1) {
-  return function (...args2){
+  return function (...args2) {
     return fn(...args1, ...args2);
-  }
+  };
 }
-
 
 /**
  * Returns the id generator function that returns next integer starting
@@ -239,11 +226,12 @@ function partialUsingArguments(fn, ...args1) {
  */
 function getIdGeneratorFunction(startFrom) {
   let id = startFrom;
-  return function(){
-    return id++;
-  }
+  return function () {
+    const result = id;
+    id += 1;
+    return result;
+  };
 }
-
 
 module.exports = {
   getComposition,

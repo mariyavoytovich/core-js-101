@@ -204,19 +204,19 @@ function extractEmails(str) {
  */
 function getRectangleString(width, height) {
   const linesWidth = width - 2;
-  const linesHeight = height - 2;
+  let linesHeight = height - 2;
 
   const firstString = `┌${'─'.repeat(linesWidth)}┐\n`;
   const betweenStrings = [];
 
-  for(let i =0; i<linesHeight; i++){
+  while (linesHeight > 0) {
     betweenStrings.push(`│${' '.repeat(linesWidth)}│\n`);
+    linesHeight -= 1;
   }
 
   const lastString = `└${'─'.repeat(linesWidth)}┘\n`;
   return `${firstString}${betweenStrings.join('')}${lastString}`;
 }
-
 
 /**
  * Encode specified string with ROT13 cipher
@@ -237,7 +237,7 @@ function getRectangleString(width, height) {
 function encodeToRot13(str) {
   const input = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
   const output = 'NOPQRSTUVWXYZABCDEFGHIJKLMnopqrstuvwxyzabcdefghijklm';
-  const r = str.split('').map(s => output[input.indexOf(s)] || s);//.join();
+  const r = str.split('').map((s) => output[input.indexOf(s)] || s);
   return r.join('');
 }
 
@@ -284,7 +284,7 @@ function isString(value) {
  *   'K♠' => 51
  */
 function getCardId(value) {
-  const numberOrder = ['A','2','3','4','5','6','7','8','9','10','J','Q','K'];
+  const numberOrder = ['A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K'];
   const suitOrder = ['♣', '♦', '♥', '♠'];
   const indexOfSuit = value.length - 1;
   const number = value.slice(0, indexOfSuit);

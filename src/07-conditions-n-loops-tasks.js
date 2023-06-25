@@ -30,9 +30,9 @@ function getFizzBuzz(num) {
   let result = '';
   const multiples = { 3: 'Fizz', 5: 'Buzz' };
 
-  for (const number in multiples) {
-    if (num % number === 0) result += multiples[number];
-  }
+  Object.keys(multiples).forEach((currKey) => {
+    if (num % currKey === 0) result += multiples[currKey];
+  }, '');
 
   return result === '' ? num : result;
 }
@@ -50,11 +50,14 @@ function getFizzBuzz(num) {
  */
 function getFactorial(num) {
   if (num === 0 || num === 1) return 1;
-  for (var i = num - 1; i >= 1; i--) {
-    num *= i;
+  let resultNum = num;
+  let i = num - 1;
+  while (i >= 1) {
+    resultNum *= i;
+    i -= 1;
   }
 
-  return num;
+  return resultNum;
 }
 
 /**
@@ -71,8 +74,12 @@ function getFactorial(num) {
  */
 function getSumBetweenNumbers(n1, n2) {
   let result = 0;
-  for (let i = n1; i <= n2; i++) result += i;
+  let number = n1;
 
+  while (number <= n2) {
+    result += number;
+    number += 1;
+  }
   return result;
 }
 
@@ -137,15 +144,11 @@ function doRectanglesOverlap(rect1, rect2) {
     y2: rect.top + rect.height,
   });
 
-  const rect1Points = getRectPoints(rect1);
-  const rect2Points = getRectPoints(rect2);
+  const rec1P = getRectPoints(rect1);
+  const rec2P = getRectPoints(rect2);
 
-  const widthIsPositive =
-    Math.min(rect1Points.x2, rect2Points.x2) >
-    Math.max(rect1Points.x1, rect2Points.x1);
-  const heightIsPositive =
-    Math.min(rect1Points.y2, rect2Points.y2) >
-    Math.max(rect1Points.y1, rect2Points.y1);
+  const widthIsPositive = Math.min(rec1P.x2, rec2P.x2) > Math.max(rec1P.x1, rec2P.x1);
+  const heightIsPositive = Math.min(rec1P.y2, rec2P.y2) > Math.max(rec1P.y1, rec2P.y1);
   return widthIsPositive && heightIsPositive;
 }
 
@@ -179,8 +182,8 @@ function isInsideCircle(circle, point) {
   const { center, radius } = circle;
   const { x, y } = point;
 
-  const leftCond = Math.pow(center.x - x, 2) + Math.pow(center.y - y, 2);
-  const rightCond = Math.pow(radius, 2);
+  const leftCond = (center.x - x) ** 2 + (center.y - y) ** 2;
+  const rightCond = radius ** 2;
   return leftCond < rightCond;
 }
 
@@ -196,7 +199,7 @@ function isInsideCircle(circle, point) {
  *   'entente' => null
  */
 function findFirstSingleChar(str) {
-  for (let i = 0; i < str.length; i++) {
+  for (let i = 0; i < str.length; i += 1) {
     const char = str[i];
     if (str.indexOf(char) === str.lastIndexOf(char)) return char;
   }
@@ -260,7 +263,7 @@ function reverseString(str) {
  *   34143 => 34143
  */
 function reverseInteger(num) {
-  return Number.parseInt(reverseString(`${num}`));
+  return Number.parseInt(reverseString(`${num}`), 10);
 }
 
 /**
@@ -284,23 +287,26 @@ function reverseInteger(num) {
  *   4916123456789012 => false
  */
 function isCreditCardNumber(ccn) {
-  let ccnStr = `${ccn}`.replace(/\D/g, '');
+  const ccnStr = `${ccn}`.replace(/\D/g, '');
 
-  var nCheck = 0;
-  var bEven = false;
+  let nCheck = 0;
+  let bEven = false;
 
-  for (let i = ccnStr.length - 1; i >= 0; i--) {
-    var nDigit = parseInt(ccnStr.charAt(i), 10);
+  for (let i = ccnStr.length - 1; i >= 0; i -= 1) {
+    let nDigit = parseInt(ccnStr.charAt(i), 10);
 
-    if (bEven && (nDigit *= 2) > 9) {
-      nDigit -= 9;
+    if (bEven) {
+      nDigit *= 2;
+      if (nDigit > 9) {
+        nDigit -= 9;
+      }
     }
 
     nCheck += nDigit;
     bEven = !bEven;
   }
 
-  return nCheck % 10 == 0;
+  return nCheck % 10 === 0;
 }
 
 /**
@@ -320,7 +326,7 @@ function isCreditCardNumber(ccn) {
 function getDigitalRoot(num) {
   let sum = num;
   let arr = [];
-  const reducer = (a, b) => parseInt(a) + parseInt(b);
+  const reducer = (a, b) => parseInt(a, 10) + parseInt(b, 10);
 
   while (sum > 9) {
     arr = sum.toString().split('');
@@ -358,13 +364,16 @@ function isBracketsBalanced(str) {
   const array = str.split('');
   const queen = [];
 
-  for (const bracket of array) {
+  let index = 0;
+  while (index < array.length) {
+    const bracket = array[index];
     if (openBrackets.indexOf(bracket) > -1) {
       queen.push(bracket);
     } else {
-      const index = closeBrackets.indexOf(bracket);
-      if (queen.pop() !== openBrackets[index]) return false;
+      const indexBracket = closeBrackets.indexOf(bracket);
+      if (queen.pop() !== openBrackets[indexBracket]) return false;
     }
+    index += 1;
   }
 
   return queen.length === 0;
@@ -414,14 +423,16 @@ function getCommonDirectoryPath(pathes) {
 
   while (go) {
     const p = splittedPaths[0][index];
-    for (let i = 1; i < splittedPaths.length; i++) {
+    for (let i = 1; i < splittedPaths.length; i += 1) {
       if (p !== splittedPaths[i][index]) {
         go = false;
         break;
       }
     }
-    go && commonPath.push(p);
-    index++;
+    if (go) {
+      commonPath.push(p);
+    }
+    index += 1;
   }
 
   return commonPath.length === 0 ? '' : `${commonPath.join('/')}/`;
@@ -450,11 +461,11 @@ function getMatrixProduct(m1, m2) {
   const m1NumCols = m1[0].length;
   const m2NumCols = m2[0].length;
   const m = new Array(m1NumRows);
-  for (let r = 0; r < m1NumRows; ++r) {
+  for (let r = 0; r < m1NumRows; r += 1) {
     m[r] = new Array(m2NumCols); // initialize the current row
-    for (let c = 0; c < m2NumCols; ++c) {
+    for (let c = 0; c < m2NumCols; c += 1) {
       m[r][c] = 0; // initialize the current cell
-      for (let i = 0; i < m1NumCols; ++i) {
+      for (let i = 0; i < m1NumCols; i += 1) {
         m[r][c] += m1[r][i] * m2[i][c];
       }
     }
@@ -498,34 +509,70 @@ const O = '0';
 function evaluateTicTacToePosition(position) {
   let count = 0;
 
-  const winPositions =[
-    [[0,0], [0,1], [0,2]],
-    [[1,0], [1,1], [1,2]],
-    [[2,0], [2,1], [2,2]],
+  const winPositions = [
+    [
+      [0, 0],
+      [0, 1],
+      [0, 2],
+    ],
+    [
+      [1, 0],
+      [1, 1],
+      [1, 2],
+    ],
+    [
+      [2, 0],
+      [2, 1],
+      [2, 2],
+    ],
 
-    [[0,0], [1,0], [2,0]],
-    [[0,1], [1,1], [2,1]],
-    [[0,2], [1,2], [2,2]],
+    [
+      [0, 0],
+      [1, 0],
+      [2, 0],
+    ],
+    [
+      [0, 1],
+      [1, 1],
+      [2, 1],
+    ],
+    [
+      [0, 2],
+      [1, 2],
+      [2, 2],
+    ],
 
-    [[0,0], [1,1], [2,2]],
-    [[0,2], [1,1], [2,0]]
+    [
+      [0, 0],
+      [1, 1],
+      [2, 2],
+    ],
+    [
+      [0, 2],
+      [1, 1],
+      [2, 0],
+    ],
   ];
 
-  for(let positions of winPositions){
+  let index = 0;
+
+  while (index < winPositions.length) {
+    const positions = winPositions[index];
     const [i, j] = positions[0];
     const checkValue = position[i][j];
-    if(checkValue === X || checkValue === O){
-      for(let i = 0; i< positions.length; i++){
-         const [cI, cJ] = positions[i];
-         const value = position[cI][cJ];
-         checkValue === value && count++;
+    if (checkValue === X || checkValue === O) {
+      for (let pI = 0; pI < positions.length; pI += 1) {
+        const [cI, cJ] = positions[pI];
+        const value = position[cI][cJ];
+        if (checkValue === value) {
+          count += 1;
+        }
       }
     }
 
-    if(count === 3)
-      return checkValue;
-    else
-      count = 0;
+    if (count === 3) return checkValue;
+    count = 0;
+    index += 1;
   }
 
   return undefined;

@@ -6,7 +6,6 @@
  *                                                                                           *
  ******************************************************************************************* */
 
-
 /**
  * Parses a rfc2822 string date representation into date value
  * For rfc2822 date specification refer to : http://tools.ietf.org/html/rfc2822#page-14
@@ -38,7 +37,6 @@ function parseDataFromIso8601(value) {
   return new Date(value);
 }
 
-
 /**
  * Returns true if specified date is leap year and false otherwise
  * Please find algorithm here: https://en.wikipedia.org/wiki/Leap_year#Algorithm
@@ -55,9 +53,8 @@ function parseDataFromIso8601(value) {
  */
 function isLeapYear(date) {
   const year = date.getFullYear();
-  return ((year % 4 == 0) && (year % 100 != 0)) || (year % 400 == 0);
+  return (year % 4 === 0 && year % 100 !== 0) || year % 400 === 0;
 }
-
 
 /**
  * Returns the string representation of the timespan between two dates.
@@ -79,7 +76,6 @@ function timeSpanToString(startDate, endDate) {
   return new Date(diff).toISOString().substring(11, 23);
 }
 
-
 /**
  * Returns the angle (in radians) between the hands of an analog clock
  * for the specified Greenwich time.
@@ -98,14 +94,13 @@ function timeSpanToString(startDate, endDate) {
  */
 function angleBetweenClockHands(date) {
   const inputHours = date.getUTCHours();
-	const hours = inputHours > 12 ? inputHours -12 : inputHours === 12 ? 0 : inputHours;
+  const hours = inputHours >= 12 ? inputHours - 12 : inputHours;
   const min = date.getUTCMinutes();
 
-  const angle = Math.abs(0.5 * (60 * hours - 11 *min));
+  const angle = Math.abs(0.5 * (60 * hours - 11 * min));
   const resultAngle = angle > 180 ? 360 - angle : angle;
-  return resultAngle * Math.PI / 180;
+  return (resultAngle * Math.PI) / 180;
 }
-
 
 module.exports = {
   parseDataFromRfc2822,

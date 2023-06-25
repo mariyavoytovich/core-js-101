@@ -5,7 +5,6 @@
  *                                                                                                *
  ************************************************************************************************ */
 
-
 /**
  * Return Promise object that is resolved with string value === 'Hooray!!! She said "Yes"!',
  * if boolean value === true is passed, resolved with string value === 'Oh no, she said "No".',
@@ -30,13 +29,13 @@
  */
 function willYouMarryMe(isPositiveAnswer) {
   return new Promise((resolve, reject) => {
-    if(typeof isPositiveAnswer !== 'boolean')
+    if (typeof isPositiveAnswer !== 'boolean') {
       reject(new Error('Wrong parameter is passed! Ask her again.'));
+    }
 
     resolve(isPositiveAnswer ? 'Hooray!!! She said "Yes"!' : 'Oh no, she said "No".');
   });
 }
-
 
 /**
  * Return Promise object that should be resolved with array containing plain values.
@@ -55,10 +54,8 @@ function willYouMarryMe(isPositiveAnswer) {
  */
 function processAllPromises(array) {
   return new Promise((resolve, reject) => {
-    Promise.all(array).then(
-      result => resolve(result),
-      error => reject(new Error(error.message))
-    )
+    Promise.all(array).then((result) => resolve(result),
+      (error) => reject(new Error(error.message)));
   });
 }
 
@@ -83,10 +80,8 @@ function processAllPromises(array) {
  */
 function getFastestPromise(array) {
   return new Promise((resolve, reject) => {
-    Promise.race(array).then(
-      result => resolve(result),
-      error => reject(new Error(error.message))
-    )
+    Promise.race(array).then((result) => resolve(result),
+      (error) => reject(new Error(error.message)));
   });
 }
 
@@ -107,25 +102,34 @@ function getFastestPromise(array) {
  *    });
  *
  */
-async function chainPromises(array, action ) {
+async function chainPromises(array, action) {
   const results = [];
 
-  return new Promise((resolve, reject)=>{
-    const checkAll = () =>{
-      if(results.length === array.length){
-        const actionResult = results.reduce((prev, curr)=> curr instanceof Error ? prev : action(prev, curr))
+  return new Promise((resolve) => {
+    const checkAll = () => {
+      if (results.length === array.length) {
+        const actionResult = results.reduce((prev, curr) => {
+          if (curr instanceof Error) {
+            return prev;
+          }
+          return action(prev, curr);
+        });
         resolve(actionResult);
       }
-    }
-    const pushResult = (value) =>{
+    };
+    const pushResult = (value) => {
       results.push(value);
       checkAll();
-    }
+    };
 
-    for(const promise of array){
+    let index = 0;
+
+    while (index < array.length) {
+      const promise = array[index];
       promise
-        .then(result => pushResult(result))
-        .catch(error => pushResult(new Error(error.message)));
+        .then((result) => pushResult(result))
+        .catch((error) => pushResult(new Error(error.message)));
+      index += 1;
     }
   });
 }

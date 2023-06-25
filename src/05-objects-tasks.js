@@ -6,7 +6,6 @@
  *                                                                                                *
  ************************************************************************************************ */
 
-
 /**
  * Returns the rectangle object with width and height parameters and getArea() method
  *
@@ -20,14 +19,13 @@
  *    console.log(r.height);      // => 20
  *    console.log(r.getArea());   // => 200
  */
-function Rectangle(width, height) {
+function Rectangle(recWidth, recHeight) {
   return {
-    width: width,
-    height: height,
-    getArea: () => width * height
-  }
+    width: recWidth,
+    height: recHeight,
+    getArea: () => recWidth * recHeight,
+  };
 }
-
 
 /**
  * Returns the JSON representation of specified object
@@ -42,7 +40,6 @@ function Rectangle(width, height) {
 function getJSON(obj) {
   return JSON.stringify(obj);
 }
-
 
 /**
  * Returns the object of specified type from JSON representation
@@ -60,9 +57,7 @@ function fromJSON(proto, json) {
   const values = Object.values(obj);
 
   return new proto.constructor(...values);
-
 }
-
 
 /**
  * Css selectors builder
@@ -117,17 +112,6 @@ function fromJSON(proto, json) {
  *
  *  For more examples see unit tests.
  */
-class CombineSelectorBuilder{
-  constructor(selector1, combinator, selector2){
-    this._selector1 = selector1;
-    this._combinator = combinator;
-    this._selector2 = selector2;
-  }
-
-  stringify(){
-    return `${this._selector1.stringify()} ${this._combinator} ${this._selector2.stringify()}`;
-  }
-}
 
 const ELEMENTS = {
   TAG: 'TAG',
@@ -135,34 +119,35 @@ const ELEMENTS = {
   CLASS: 'CLASS',
   ATTRIBUTE: 'ATTRIBUTE',
   PSEUDO_CLASS: 'PSEUDO-CLASS',
-  PSEUDO_ELEMENT: 'PSEUDO-ELEMENT'
-}
+  PSEUDO_ELEMENT: 'PSEUDO-ELEMENT',
+};
 
-class SelectorBuilder{
+class SelectorBuilder {
   constructor() {
-    this._elementsPathOrder = [
+    this.elementsPathOrder = [
       ELEMENTS.TAG,
       ELEMENTS.ID,
       ELEMENTS.CLASS,
       ELEMENTS.ATTRIBUTE,
       ELEMENTS.PSEUDO_CLASS,
-      ELEMENTS.PSEUDO_ELEMENT];
+      ELEMENTS.PSEUDO_ELEMENT,
+    ];
 
-    this._map = new Map();
+    this.map = new Map();
+    this.combineSelector = false;
   }
 
   element(value) {
     this.checkElementExist();
     this.checkElementOrder(ELEMENTS.TAG);
-    this._map.set(ELEMENTS.TAG, value);
+    this.map.set(ELEMENTS.TAG, value);
     return this;
   }
-
 
   id(value) {
     this.checkIdExist();
     this.checkElementOrder(ELEMENTS.ID);
-    this._map.set(ELEMENTS.ID, `#${value}`);
+    this.map.set(ELEMENTS.ID, `#${value}`);
     return this;
   }
 
@@ -187,52 +172,70 @@ class SelectorBuilder{
   pseudoElement(value) {
     this.checkPseudoElementExist();
     this.checkElementOrder(ELEMENTS.PSEUDO_ELEMENT);
-    this._map.set(ELEMENTS.PSEUDO_ELEMENT, `::${value}`);
+    this.map.set(ELEMENTS.PSEUDO_ELEMENT, `::${value}`);
     return this;
   }
 
-  stringify(){
+  stringify() {
+    if (this.combineSelector) {
+      this.combineSelector = false;
+      return `${this.selector1.stringify()} ${
+        this.combinator
+      } ${this.selector2.stringify()}`;
+    }
+
     let result = '';
 
-    for(let value of this._map.values()){
+    this.map.forEach((value) => {
       result += Array.isArray(value) ? value.join('') : value;
-    }
+    });
+
     return result;
   }
 
-  setArrayValueToMap(key, value){
-    const elements = this._map.get(key);
+  setArrayValueToMap(key, value) {
+    const elements = this.map.get(key);
 
-    (elements)
-      ? (elements.push(value))
-      : (this._map.set(key, [value]));
-  }
-
-  checkPseudoElementExist(){
-    if(this._map.has(ELEMENTS.PSEUDO_ELEMENT))
-      throw new Error("Element, id and pseudo-element should not occur more then one time inside the selector");
-  }
-
-  checkIdExist(){
-    if(this._map.has(ELEMENTS.ID))
-      throw new Error("Element, id and pseudo-element should not occur more then one time inside the selector");
-  }
-
-  checkElementExist(){
-    if(this._map.has(ELEMENTS.TAG))
-      throw new Error("Element, id and pseudo-element should not occur more then one time inside the selector");
-  }
-
-  checkElementOrder(element){
-    const index = this._elementsPathOrder.indexOf(element);
-    for(let i = index + 1; i < this._elementsPathOrder.length; i++){
-      if(this._map.has(this._elementsPathOrder[i]))
-        this.throwPathException();
+    if (elements) {
+      elements.push(value);
+    } else {
+      this.map.set(key, [value]);
     }
   }
 
-  throwPathException(){
-    throw new Error("Selector parts should be arranged in the following order: element, id, class, attribute, pseudo-class, pseudo-element");
+  checkPseudoElementExist() {
+    if (this.map.has(ELEMENTS.PSEUDO_ELEMENT)) {
+      throw new Error('Element, id and pseudo-element should not occur more then one time inside the selector');
+    }
+  }
+
+  checkIdExist() {
+    if (this.map.has(ELEMENTS.ID)) {
+      throw new Error('Element, id and pseudo-element should not occur more then one time inside the selector');
+    }
+  }
+
+  checkElementExist() {
+    if (this.map.has(ELEMENTS.TAG)) {
+      throw new Error('Element, id and pseudo-element should not occur more then one time inside the selector');
+    }
+  }
+
+  checkElementOrder(element) {
+    const index = this.elementsPathOrder.indexOf(element);
+    for (let i = index + 1; i < this.elementsPathOrder.length; i += 1) {
+      if (this.map.has(this.elementsPathOrder[i])) {
+        throw new Error('Selector parts should be arranged in the following order: element, id, class, attribute, pseudo-class, pseudo-element');
+      }
+    }
+  }
+
+  combine(selector1, combinator, selector2) {
+    this.selector1 = selector1;
+    this.combinator = combinator;
+    this.selector2 = selector2;
+    this.combineSelector = true;
+    return this;
   }
 }
 
@@ -244,30 +247,29 @@ const cssSelectorBuilder = {
   },
 
   id(value) {
-    return new SelectorBuilder().id(value)
+    return new SelectorBuilder().id(value);
   },
 
   class(value) {
-    return new SelectorBuilder().class(value)
+    return new SelectorBuilder().class(value);
   },
 
   attr(value) {
-    return new SelectorBuilder().attr(value)
+    return new SelectorBuilder().attr(value);
   },
 
   pseudoClass(value) {
-    return new SelectorBuilder().pseudoClass(value)
+    return new SelectorBuilder().pseudoClass(value);
   },
 
   pseudoElement(value) {
-    return new SelectorBuilder().pseudoElement(value)
+    return new SelectorBuilder().pseudoElement(value);
   },
 
-  combine(selector1, combinator, selector2 ) {
-    return new CombineSelectorBuilder(selector1, combinator, selector2);
+  combine(selector1, combinator, selector2) {
+    return new SelectorBuilder().combine(selector1, combinator, selector2);
   },
 };
-
 
 module.exports = {
   Rectangle,
